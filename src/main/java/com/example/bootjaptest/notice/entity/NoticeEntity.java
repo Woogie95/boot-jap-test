@@ -22,5 +22,8 @@ public class NoticeEntity {
     private String title;
     private String content;
     private LocalDateTime registered;
+    private LocalDateTime updated;
+    private long hits;
+    private long likes;
 
 }
