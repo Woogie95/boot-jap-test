@@ -3,6 +3,7 @@ package com.example.bootjaptest.notice.controller;
 import com.example.bootjaptest.notice.dto.CreateNoticeRequest;
 import com.example.bootjaptest.notice.dto.UpdateNoticeRequest;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
+import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
 import com.example.bootjaptest.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -136,6 +137,32 @@ public class NoticeController {
         notice.setContent(updateNoticeRequest.getContent());
         notice.setUpdated(LocalDateTime.now());
         noticeRepository.save(notice);
+    }
 
+    @PatchMapping("/api/notice/{id}/hits")
+    public void increaseHits(@PathVariable Long id) {
+        NoticeEntity noticeEntity = noticeRepository.findById(id)
+                .orElseThrow(() -> new NoticeNotFoundException("공지사항의 글이 존재하지 않습니다."));
+        noticeEntity.setHits(noticeEntity.getHits() + 1);
+        noticeRepository.save(noticeEntity);
+    }
+
+    @DeleteMapping("/api/notice/{id}")
+    public void deleteNotice(@PathVariable Long id) {
+        NoticeEntity noticeEntity = noticeRepository.findById(id)
+                .orElseThrow(() -> new NoticeNotFoundException("공지사항의 글이 존재하지 않습니다."));
+        noticeRepository.delete(noticeEntity);
+    }
+
+    @DeleteMapping("/api/notice2/{id}")
+    public void deleteNotice2(@PathVariable Long id) {
+        NoticeEntity noticeEntity = noticeRepository.findById(id)
+                .orElseThrow(() -> new NoticeNotFoundException("공지사항의 글이 존재하지 않습니다."));
+        if (noticeEntity.isDeleted()) {
+            throw new NoticeAlreadyDeletedException("이미 삭제된 글입니다.");
+        }
+        noticeEntity.setDeleted(true);
+        noticeEntity.setDeletedDate(LocalDateTime.now());
+        noticeRepository.save(noticeEntity);
     }
 }

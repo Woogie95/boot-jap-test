@@ -25,5 +25,7 @@ public class NoticeEntity {
     private LocalDateTime updated;
     private long hits;
     private long likes;
+    private boolean isDeleted;
+    private LocalDateTime deletedDate;
 
 }

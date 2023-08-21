@@ -1,5 +1,6 @@
 package com.example.bootjaptest.notice.controller;
 
+import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,4 +15,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoticeAlreadyDeletedException.class)
+    public ResponseEntity<String> handlerNoticeAlreadyDeletedException(NoticeAlreadyDeletedException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.OK);
+    }
 }
