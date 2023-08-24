@@ -1,17 +1,21 @@
 package com.example.bootjaptest.notice.controller;
 
 import com.example.bootjaptest.notice.dto.CreateNoticeRequest;
+import com.example.bootjaptest.notice.dto.DeleteNoticeRequest;
 import com.example.bootjaptest.notice.dto.UpdateNoticeRequest;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
 import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
 import com.example.bootjaptest.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -165,4 +169,40 @@ public class NoticeController {
         noticeEntity.setDeletedDate(LocalDateTime.now());
         noticeRepository.save(noticeEntity);
     }
+
+    @DeleteMapping("/api/notice")
+    public void deleteNoticeList(@RequestBody DeleteNoticeRequest deleteNoticeRequest) {
+        List<NoticeEntity> noticeEntities = noticeRepository.findByIdIn(deleteNoticeRequest.getIdList())
+                .orElseThrow(() -> new NoticeNotFoundException("공지사항에 글이 존재하지 않습니다."));
+
+        noticeEntities.forEach(e -> {
+            e.setDeleted(true);
+            e.setDeletedDate(LocalDateTime.now());
+        });
+        noticeRepository.saveAll(noticeEntities);
+    }
+
+    @DeleteMapping("/api/notice/all")
+    public void deleteAll() {
+        noticeRepository.deleteAll();
+    }
+
+    @PostMapping("/api/notice-6")
+    public ResponseEntity<Object> addNotice6(@RequestBody CreateNoticeRequest createNoticeRequest) {
+        if (createNoticeRequest.getTitle() == null
+                || createNoticeRequest.getTitle().length() < 1
+                || createNoticeRequest.getContent() == null
+                || createNoticeRequest.getContent().length() < 1) {
+            return new ResponseEntity<>("입력값이 정확하지 않습니다.", HttpStatus.BAD_REQUEST);
+        }
+        noticeRepository.save(NoticeEntity.builder()
+                .title(createNoticeRequest.getTitle())
+                .content(createNoticeRequest.getContent())
+                .hits(0)
+                .likes(1)
+                .registered(LocalDateTime.now() )
+                .build());
+        return ResponseEntity.ok().build();
+    }
+
 }
