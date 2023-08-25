@@ -2,16 +2,23 @@ package com.example.bootjaptest.notice.controller;
 
 import com.example.bootjaptest.notice.dto.CreateNoticeRequest;
 import com.example.bootjaptest.notice.dto.DeleteNoticeRequest;
+import com.example.bootjaptest.notice.dto.ErrorResponse;
 import com.example.bootjaptest.notice.dto.UpdateNoticeRequest;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
 import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
 import com.example.bootjaptest.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -188,21 +195,49 @@ public class NoticeController {
     }
 
     @PostMapping("/api/notice-6")
-    public ResponseEntity<Object> addNotice6(@RequestBody CreateNoticeRequest createNoticeRequest) {
-        if (createNoticeRequest.getTitle() == null
-                || createNoticeRequest.getTitle().length() < 1
-                || createNoticeRequest.getContent() == null
-                || createNoticeRequest.getContent().length() < 1) {
-            return new ResponseEntity<>("입력값이 정확하지 않습니다.", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<Object> addNotice6(@RequestBody @Valid CreateNoticeRequest createNoticeRequest,
+                                             Errors errors) {
+        if (errors.hasErrors()) {
+            List<ErrorResponse> errorResponses = new ArrayList<>();
+            errors.getAllErrors().forEach(e -> {
+                errorResponses.add(ErrorResponse.of((FieldError) e));
+            });
+            return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
         }
         noticeRepository.save(NoticeEntity.builder()
                 .title(createNoticeRequest.getTitle())
                 .content(createNoticeRequest.getContent())
                 .hits(0)
                 .likes(1)
-                .registered(LocalDateTime.now() )
+                .registered(LocalDateTime.now())
                 .build());
         return ResponseEntity.ok().build();
     }
 
+    // 최근 데이터 개수로 넘겨주기
+    @GetMapping("/api/notice/latest/{size}")
+    public Page<NoticeEntity> getLatest(@PathVariable int size) {
+        return noticeRepository.findAll(
+                PageRequest.of(0, size, Sort.Direction.DESC, "registered"));
+    }
+
+    @PostMapping("/api/notice-7")
+    public void addNotice7(@RequestBody NoticeEntity noticeEntity) {
+        LocalDateTime checkTime = LocalDateTime.now().minusMinutes(1);
+        noticeRepository.findByTitleAndContentAndRegisteredIsGreaterThanEqual(
+                noticeEntity.getTitle(),
+                noticeEntity.getContent(),
+                checkTime);
+
+
+
+        noticeRepository.save(NoticeEntity.builder()
+                .title(noticeEntity.getTitle())
+                .content(noticeEntity.getContent())
+                .hits(0)
+                .likes(1)
+                .registered(LocalDateTime.now())
+                .build());
+        return ResponseEntity.ok().build();
+    }
 }
