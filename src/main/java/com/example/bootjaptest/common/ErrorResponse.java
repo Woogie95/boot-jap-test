@@ -1,9 +1,7 @@
-package com.example.bootjaptest.notice.dto;
+package com.example.bootjaptest.common;
 
 import lombok.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 
 @Getter
 @Setter

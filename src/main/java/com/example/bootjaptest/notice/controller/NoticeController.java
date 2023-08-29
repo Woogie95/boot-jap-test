@@ -1,10 +1,11 @@
 package com.example.bootjaptest.notice.controller;
 
+import com.example.bootjaptest.common.ErrorResponse;
 import com.example.bootjaptest.notice.dto.CreateNoticeRequest;
 import com.example.bootjaptest.notice.dto.DeleteNoticeRequest;
-import com.example.bootjaptest.notice.dto.ErrorResponse;
 import com.example.bootjaptest.notice.dto.UpdateNoticeRequest;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
+import com.example.bootjaptest.notice.exception.DuplicateNoticeException;
 import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
 import com.example.bootjaptest.notice.repository.NoticeRepository;
@@ -22,7 +23,6 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -224,13 +224,13 @@ public class NoticeController {
     @PostMapping("/api/notice-7")
     public void addNotice7(@RequestBody NoticeEntity noticeEntity) {
         LocalDateTime checkTime = LocalDateTime.now().minusMinutes(1);
-        noticeRepository.findByTitleAndContentAndRegisteredIsGreaterThanEqual(
+        int noticeEntityCount = noticeRepository.countByTitleAndContentAndRegisteredIsGreaterThanEqual(
                 noticeEntity.getTitle(),
                 noticeEntity.getContent(),
                 checkTime);
-
-
-
+            if (noticeEntityCount > 0) {
+                throw new DuplicateNoticeException("1분이내에 작성한 동일한 공지사항이 존재합니다.");
+        }
         noticeRepository.save(NoticeEntity.builder()
                 .title(noticeEntity.getTitle())
                 .content(noticeEntity.getContent())
@@ -238,6 +238,5 @@ public class NoticeController {
                 .likes(1)
                 .registered(LocalDateTime.now())
                 .build());
-        return ResponseEntity.ok().build();
     }
 }

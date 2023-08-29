@@ -10,6 +10,5 @@ import java.util.Optional;
 public interface NoticeRepository extends JpaRepository<NoticeEntity, Long> {
     Optional<List<NoticeEntity>> findByIdIn(List<Long> idList);
 
-    Optional<List<NoticeEntity>> findByTitleAndContentAndRegisteredIsGreaterThanEqual(
-            String title, String content, LocalDateTime registered);
+    int countByTitleAndContentAndRegisteredIsGreaterThanEqual(String title, String content, LocalDateTime registered);
 }
