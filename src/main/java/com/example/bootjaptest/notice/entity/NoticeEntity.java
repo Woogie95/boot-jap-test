@@ -1,11 +1,9 @@
 package com.example.bootjaptest.notice.entity;
 
+import com.example.bootjaptest.user.entity.UserEntity;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
@@ -21,11 +19,14 @@ public class NoticeEntity {
     private Long id;
     private String title;
     private String content;
-    private LocalDateTime registered;
-    private LocalDateTime updated;
+    private LocalDateTime registerDate;
+    private LocalDateTime updatedDate;
     private long hits;
     private long likes;
     private boolean isDeleted;
     private LocalDateTime deletedDate;
+    @ManyToOne
+    @JoinColumn
+    private UserEntity userEntity;
 
 }

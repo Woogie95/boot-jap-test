@@ -42,7 +42,7 @@ public class NoticeController {
         noticeEntity.setId(1L);
         noticeEntity.setTitle("제목입니다.");
         noticeEntity.setContent("내용입니다.");
-        noticeEntity.setRegistered(LocalDateTime.now());
+        noticeEntity.setRegisterDate(LocalDateTime.now());
 
         return noticeEntity;
     }
@@ -55,13 +55,13 @@ public class NoticeController {
                 .id(1L)
                 .title("제목1")
                 .content("내용1")
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build());
         noticeEntities.add(NoticeEntity.builder()
                 .id(2L)
                 .title("제목2")
                 .content("내용2")
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build());
         return noticeEntities;
     }
@@ -83,21 +83,21 @@ public class NoticeController {
                 .id(1L)
                 .title(title)
                 .content(content)
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build();
     }
 
     @PostMapping("/api/notice_1")
     public NoticeEntity addNotice(NoticeEntity noticeEntity) {
         noticeEntity.setId(3L);
-        noticeEntity.setRegistered(LocalDateTime.now());
+        noticeEntity.setRegisterDate(LocalDateTime.now());
         return noticeEntity;
     }
 
     @PostMapping("/api/notice_2")
     public NoticeEntity addNotice2(@RequestBody NoticeEntity noticeEntity) {
         noticeEntity.setId(3L);
-        noticeEntity.setRegistered(LocalDateTime.now());
+        noticeEntity.setRegisterDate(LocalDateTime.now());
         return noticeEntity;
     }
 
@@ -106,7 +106,7 @@ public class NoticeController {
         NoticeEntity noticeEntity = NoticeEntity.builder()
                 .title(createNoticeRequest.getTitle())
                 .content(createNoticeRequest.getContent())
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build();
         noticeRepository.save(noticeEntity);
         return noticeEntity;
@@ -117,7 +117,7 @@ public class NoticeController {
         NoticeEntity noticeEntity = NoticeEntity.builder()
                 .title(createNoticeRequest.getTitle())
                 .content(createNoticeRequest.getContent())
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .hits(0)
                 .likes(0)
                 .build();
@@ -146,7 +146,7 @@ public class NoticeController {
                 .orElseThrow(() -> new NoticeNotFoundException("공지사항의 글이 존재하지 않습니다."));
         notice.setTitle(updateNoticeRequest.getTitle());
         notice.setContent(updateNoticeRequest.getContent());
-        notice.setUpdated(LocalDateTime.now());
+        notice.setUpdatedDate(LocalDateTime.now());
         noticeRepository.save(notice);
     }
 
@@ -209,7 +209,7 @@ public class NoticeController {
                 .content(createNoticeRequest.getContent())
                 .hits(0)
                 .likes(1)
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build());
         return ResponseEntity.ok().build();
     }
@@ -224,7 +224,7 @@ public class NoticeController {
     @PostMapping("/api/notice-7")
     public void addNotice7(@RequestBody NoticeEntity noticeEntity) {
         LocalDateTime checkTime = LocalDateTime.now().minusMinutes(1);
-        int noticeEntityCount = noticeRepository.countByTitleAndContentAndRegisteredIsGreaterThanEqual(
+        int noticeEntityCount = noticeRepository.countByTitleAndContentAndRegisterDateIsGreaterThanEqual(
                 noticeEntity.getTitle(),
                 noticeEntity.getContent(),
                 checkTime);
@@ -236,7 +236,7 @@ public class NoticeController {
                 .content(noticeEntity.getContent())
                 .hits(0)
                 .likes(1)
-                .registered(LocalDateTime.now())
+                .registerDate(LocalDateTime.now())
                 .build());
     }
 }

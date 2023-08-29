@@ -1,8 +1,9 @@
-package com.example.bootjaptest.notice.controller;
+package com.example.bootjaptest.common;
 
 import com.example.bootjaptest.notice.exception.DuplicateNoticeException;
 import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
+import com.example.bootjaptest.user.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,6 +24,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateNoticeException.class)
     public ResponseEntity<String> handlerDuplicateNoticeException(DuplicateNoticeException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handlerUserNotFoundException(UserNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
