@@ -3,6 +3,8 @@ package com.example.bootjaptest.common;
 import com.example.bootjaptest.notice.exception.DuplicateNoticeException;
 import com.example.bootjaptest.notice.exception.NoticeAlreadyDeletedException;
 import com.example.bootjaptest.notice.exception.NoticeNotFoundException;
+import com.example.bootjaptest.user.exception.ExistEmailException;
+import com.example.bootjaptest.user.exception.PasswordNotMatchException;
 import com.example.bootjaptest.user.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,5 +33,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlerUserNotFoundException(UserNotFoundException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
-
+    @ExceptionHandler(value = {ExistEmailException.class, PasswordNotMatchException.class})
+    public ResponseEntity<String> RunTimeException(RuntimeException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
