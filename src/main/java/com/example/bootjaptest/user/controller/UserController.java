@@ -8,12 +8,16 @@ import com.example.bootjaptest.user.dto.CreateUserRequest;
 import com.example.bootjaptest.user.dto.UpdateUserPasswordRequest;
 import com.example.bootjaptest.user.dto.UpdateUserRequest;
 import com.example.bootjaptest.user.dto.UserResponse;
+import com.example.bootjaptest.user.dto.request.FindUserEmailRequest;
+import com.example.bootjaptest.user.dto.response.FindUserEmailResponse;
+import com.example.bootjaptest.user.dto.response.ResetUserPasswordResponse;
 import com.example.bootjaptest.user.entity.UserEntity;
 import com.example.bootjaptest.user.exception.ExistEmailException;
 import com.example.bootjaptest.user.exception.PasswordNotMatchException;
 import com.example.bootjaptest.user.exception.UserNotFoundException;
 import com.example.bootjaptest.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,6 +29,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -167,5 +172,68 @@ public class UserController {
     public String getEncryptPassword(String password) {
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
         return bCryptPasswordEncoder.encode(password);
+    }
+
+    // 사용자 회원 탈퇴 API (회원정보 없으면 예외 발생, 사용자가 등록한 공지사항 있는 경우 회원 삭제 불가)
+    @DeleteMapping("/api/user/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("사용자 정보가 없습니다."));
+
+        try {
+            userRepository.delete(user);
+        } catch (DataIntegrityViolationException e) {
+            String msg = "제약조건에 문제가 발생하였습니다.";
+            return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            String msg = "회원 탈퇴 중 문제가 발생하였습니다.";
+            return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // 이름과 전화번호에 해당하는 이메일을 찾는 API
+    @GetMapping("/api/user-3")
+    public ResponseEntity<FindUserEmailResponse> findByName(@RequestBody @Valid FindUserEmailRequest findUserEmailRequest) {
+        UserEntity byUsernameAndPhoneNumber = userRepository.findByUsernameAndPhoneNumber(
+                        findUserEmailRequest.getUsername(), findUserEmailRequest.getPhoneNumber())
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        FindUserEmailResponse emailResponse = FindUserEmailResponse.from(byUsernameAndPhoneNumber);
+
+        return ResponseEntity.ok().body(emailResponse);
+    }
+
+    // 사용자 비밀번호 초기화 요청 API (아이디 입력 후 전화번호로 문자 전송받음)
+    // 아이디에 대한 정보 조회 -> 비밀번호를 초기화한 이후에 이를 문자로 전송 로직 호출
+
+    private String getResetPassword() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 10);
+    }
+
+    @GetMapping("/api/user/{id}/password/reset")
+    public ResponseEntity<ResetUserPasswordResponse> resetUserPassword(@PathVariable Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        // 비밀번호 초기화
+        String resetPassword = getResetPassword(); // 초기화 된 비밀번호
+        String resetEncryptPassword = getEncryptPassword(resetPassword); // 암호화 된 비밀번호
+        user.setPassword(resetEncryptPassword);
+        UserEntity save = userRepository.save(user);
+
+        sendSMS(String.format("[%s] 님의 임시 비밀번호가 [%s]로 초기화 되었습니다.", user.getUsername(), resetPassword));
+        return ResponseEntity.ok().body(ResetUserPasswordResponse.from(save));
+    }
+
+    void sendSMS(String msg) {
+        System.out.println("[문자메시지]");
+        System.out.println(msg);
+    }
+
+    // 내가 좋아요 한 공지사항을 보는 API
+    @GetMapping("/api/user/{id}/notice/like")
+    public void likeNotice(@PathVariable Long id) {
+
     }
 }
