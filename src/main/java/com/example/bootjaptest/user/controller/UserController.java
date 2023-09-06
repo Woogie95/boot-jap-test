@@ -3,12 +3,15 @@ package com.example.bootjaptest.user.controller;
 import com.example.bootjaptest.common.ErrorResponse;
 import com.example.bootjaptest.notice.dto.NoticeResponse;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
+import com.example.bootjaptest.notice.entity.NoticeLike;
+import com.example.bootjaptest.notice.repository.NoticeLikeRepository;
 import com.example.bootjaptest.notice.repository.NoticeRepository;
 import com.example.bootjaptest.user.dto.CreateUserRequest;
 import com.example.bootjaptest.user.dto.UpdateUserPasswordRequest;
 import com.example.bootjaptest.user.dto.UpdateUserRequest;
 import com.example.bootjaptest.user.dto.UserResponse;
 import com.example.bootjaptest.user.dto.request.FindUserEmailRequest;
+import com.example.bootjaptest.user.dto.request.LoginRequest;
 import com.example.bootjaptest.user.dto.response.FindUserEmailResponse;
 import com.example.bootjaptest.user.dto.response.ResetUserPasswordResponse;
 import com.example.bootjaptest.user.entity.UserEntity;
@@ -37,6 +40,7 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final NoticeRepository noticeRepository;
+    private final NoticeLikeRepository noticeLikeRepository;
 
     @PostMapping("/api/user")
     public ResponseEntity<?> createUser(@RequestBody @Valid CreateUserRequest createUserRequest, Errors errors) {
@@ -233,7 +237,20 @@ public class UserController {
 
     // 내가 좋아요 한 공지사항을 보는 API
     @GetMapping("/api/user/{id}/notice/like")
-    public void likeNotice(@PathVariable Long id) {
+    public List<NoticeLike> likeNotice(@PathVariable Long id) {
+        UserEntity user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+        return noticeLikeRepository.findByUserEntity(user);
+    }
+
+    /*
+    사용자 이메일과 비밀번호를 통해 JWT 를 발행하는 API
+    - JWT 토큰 발행시 사용자 정보 유효하지 않을 떄 예외
+     */
+
+    @PostMapping("/api/user/login")
+    public void createToken(LoginRequest loginRequest) {
 
     }
+
 }

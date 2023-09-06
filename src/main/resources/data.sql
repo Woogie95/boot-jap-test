@@ -19,3 +19,8 @@ INSERT INTO NOTICE_ENTITY(ID, CONTENT, HITS, LIKES, REGISTER_DATE, TITLE, is_del
 VALUES (4, '내용3', 0, 0, '2023-08-29 21:17:34.779623', '제목3', false, 4);
 INSERT INTO NOTICE_ENTITY(ID, CONTENT, HITS, LIKES, REGISTER_DATE, TITLE, is_deleted, user_entity_id)
 VALUES (5, '내용3', 0, 0, '2023-08-29 21:17:34.779623', '제목3', false, null);
+
+INSERT INTO NOTICE_LIKE(ID, notice_entity_id, user_entity_id)
+VALUES (1, 3, 1);
+INSERT INTO NOTICE_LIKE(ID, notice_entity_id, user_entity_id)
+VALUES (2, 4, 1);
