@@ -1,5 +1,7 @@
 package com.example.bootjaptest.user.controller;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.example.bootjaptest.common.ErrorResponse;
 import com.example.bootjaptest.notice.dto.NoticeResponse;
 import com.example.bootjaptest.notice.entity.NoticeEntity;
@@ -14,11 +16,13 @@ import com.example.bootjaptest.user.dto.request.FindUserEmailRequest;
 import com.example.bootjaptest.user.dto.request.LoginRequest;
 import com.example.bootjaptest.user.dto.response.FindUserEmailResponse;
 import com.example.bootjaptest.user.dto.response.ResetUserPasswordResponse;
+import com.example.bootjaptest.user.dto.response.UserTokenResponse;
 import com.example.bootjaptest.user.entity.UserEntity;
 import com.example.bootjaptest.user.exception.ExistEmailException;
 import com.example.bootjaptest.user.exception.PasswordNotMatchException;
 import com.example.bootjaptest.user.exception.UserNotFoundException;
 import com.example.bootjaptest.user.repository.UserRepository;
+import com.example.bootjaptest.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -29,8 +33,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -247,9 +253,110 @@ public class UserController {
     사용자 이메일과 비밀번호를 통해 JWT 를 발행하는 API
     - JWT 토큰 발행시 사용자 정보 유효하지 않을 떄 예외
      */
-
     @PostMapping("/api/user/login")
-    public void createToken(LoginRequest loginRequest) {
+    public ResponseEntity<?> createToken(@RequestBody @Valid LoginRequest loginRequest, Errors errors) {
+        List<ErrorResponse> errorResponseList = new ArrayList<>();
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach((e) -> {
+                errorResponseList.add(ErrorResponse.of((FieldError) e));
+            });
+            return new ResponseEntity<>(errorResponseList, HttpStatus.BAD_REQUEST);
+        }
+        UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        if (!PasswordUtils.equalPassword(loginRequest.getPassword(), user.getPassword())) {
+            throw new PasswordNotMatchException("비밀번호가 일치하지 않습니다.");
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // 44. 사용자의 이메일과 비밀번호를 통해 JWT 토큰 발행 API
+    @PostMapping("/api/user/login-2")
+    public ResponseEntity<?> createToken2(@RequestBody @Valid LoginRequest loginRequest, Errors errors) {
+        List<ErrorResponse> errorResponseList = new ArrayList<>();
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach((e) -> {
+                errorResponseList.add(ErrorResponse.of((FieldError) e));
+            });
+            return new ResponseEntity<>(errorResponseList, HttpStatus.BAD_REQUEST);
+        }
+        UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        if (!PasswordUtils.equalPassword(loginRequest.getPassword(), user.getPassword())) {
+            throw new PasswordNotMatchException("비밀번호가 일치하지 않습니다.");
+        }
+        // 토큰 발행 시점
+
+        String userToken = JWT.create()
+                .withExpiresAt(new Date())
+                .withClaim("user_id", user.getId())
+                .withSubject(user.getUsername())
+                .withIssuer(user.getEmail())
+                .sign(Algorithm.HMAC512("zerobase".getBytes()));
+
+        return ResponseEntity.ok().body(UserTokenResponse.builder().token(userToken).build());
+    }
+
+    // 45. JWT 토큰 발행시 유효기간 1개월 설정 API
+    @PostMapping("/api/user/login-3")
+    public ResponseEntity<?> createToken3(@RequestBody @Valid LoginRequest loginRequest, Errors errors) {
+        List<ErrorResponse> errorResponseList = new ArrayList<>();
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach((e) -> {
+                errorResponseList.add(ErrorResponse.of((FieldError) e));
+            });
+            return new ResponseEntity<>(errorResponseList, HttpStatus.BAD_REQUEST);
+        }
+        UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        if (!PasswordUtils.equalPassword(loginRequest.getPassword(), user.getPassword())) {
+            throw new PasswordNotMatchException("비밀번호가 일치하지 않습니다.");
+        }
+
+        LocalDateTime expiresDateTime = LocalDateTime.now().plusMinutes(1);
+        Date expiresDate = Timestamp.valueOf(expiresDateTime);
+
+        String userToken = JWT.create()
+                .withExpiresAt(expiresDate)
+                .withClaim("user_id", user.getId())
+                .withSubject(user.getUsername())
+                .withIssuer(user.getEmail())
+                .sign(Algorithm.HMAC512("zerobase".getBytes()));
+
+        return ResponseEntity.ok().body(UserTokenResponse.builder().token(userToken).build());
+    }
+
+    // 46. JWT 토큰 재발행 API
+    @PostMapping("/api/user/login-4")
+    public ResponseEntity<?> createToken4(@RequestBody @Valid LoginRequest loginRequest, Errors errors) {
+        List<ErrorResponse> errorResponseList = new ArrayList<>();
+        if (errors.hasErrors()) {
+            errors.getAllErrors().forEach((e) -> {
+                errorResponseList.add(ErrorResponse.of((FieldError) e));
+            });
+            return new ResponseEntity<>(errorResponseList, HttpStatus.BAD_REQUEST);
+        }
+        UserEntity user = userRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("회원 정보가 없습니다."));
+
+        if (!PasswordUtils.equalPassword(loginRequest.getPassword(), user.getPassword())) {
+            throw new PasswordNotMatchException("비밀번호가 일치하지 않습니다.");
+        }
+
+        LocalDateTime expiresDateTime = LocalDateTime.now().plusMinutes(1);
+        Date expiresDate = Timestamp.valueOf(expiresDateTime);
+
+        String userToken = JWT.create()
+                .withExpiresAt(expiresDate)
+                .withClaim("user_id", user.getId())
+                .withSubject(user.getUsername())
+                .withIssuer(user.getEmail())
+                .sign(Algorithm.HMAC512("zerobase".getBytes()));
+
+        return ResponseEntity.ok().body(UserTokenResponse.builder().token(userToken).build());
 
     }
 

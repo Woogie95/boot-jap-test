@@ -1,9 +1,16 @@
 package com.example.bootjaptest.user.dto.request;
 
+import lombok.*;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LoginRequest {
 
     @Email(message = "이메일 형식에 맞게 입력해 주세요.")
