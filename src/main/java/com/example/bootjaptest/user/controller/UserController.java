@@ -362,7 +362,7 @@ public class UserController {
         return ResponseEntity.ok().body(UserTokenResponse.builder().token(newToken).build());
     }
 
-    // JWT 토큰 삭제 API
+    // 47. JWT 토큰 삭제 API
     @DeleteMapping("/api/user/login")
     public ResponseEntity<?> removeToken(@RequestHeader("Z-TOKEN") String token) {
         String email = "";

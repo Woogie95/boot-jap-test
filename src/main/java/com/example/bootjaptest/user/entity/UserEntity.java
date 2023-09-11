@@ -1,5 +1,6 @@
 package com.example.bootjaptest.user.entity;
 
+import com.example.bootjaptest.user.model.UserStatus;
 import lombok.*;
 
 import javax.persistence.*;
@@ -28,5 +29,8 @@ public class UserEntity {
     private LocalDateTime registerDate;
     @Column
     private LocalDateTime updateDate;
+
+    private UserStatus userStatus;
+    private boolean lockYn;
 
 }
