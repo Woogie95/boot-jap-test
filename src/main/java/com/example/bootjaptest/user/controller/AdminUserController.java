@@ -4,6 +4,8 @@ import com.example.bootjaptest.notice.repository.NoticeRepository;
 import com.example.bootjaptest.user.dto.request.UserSearchRequest;
 import com.example.bootjaptest.user.dto.request.UserStatusRequest;
 import com.example.bootjaptest.user.dto.response.MessageResponse;
+import com.example.bootjaptest.user.dto.response.UserLogCount;
+import com.example.bootjaptest.user.dto.response.UserNoticeCount;
 import com.example.bootjaptest.user.dto.response.UserSummary;
 import com.example.bootjaptest.user.entity.UserEntity;
 import com.example.bootjaptest.user.entity.UserLoginHistory;
@@ -138,4 +140,32 @@ public class AdminUserController {
         return ResponseEntity.ok().body(MessageResponse.success(userSummary));
     }
 
+    // 57. 오늘의 사용자 가입 목록 리턴 API
+    @GetMapping("/api/admin/user/today")
+    public ResponseEntity<?> joinTodayUser() {
+        List<UserEntity> userEntities = userService.getTodayUsers();
+        return ResponseEntity.ok().body(MessageResponse.success(userEntities));
+    }
+
+    // 58. 사용자별 공지사항 수 리턴 API
+    @GetMapping("/api/admin/user/notice/count")
+    public ResponseEntity<?> userNoticeCount() {
+        List<UserNoticeCount> userNoticeCountList = userService.getUserNoticeCount();
+        return ResponseEntity.ok().body(MessageResponse.success(userNoticeCountList));
+    }
+
+    // 59. 사용자별 공지사항 수, 좋아요 수 리턴 API
+    @GetMapping("/api/admin/user/notice/like/counts")
+    public ResponseEntity<?> GetUserNoticeAndLikeCounts() {
+        List<UserLogCount> userLogCounts = userService.getUserLogCount();
+        return ResponseEntity.ok().body(MessageResponse.success(userLogCounts));
+    }
+
+    // 60. 좋아요를 가장 많이 한 사용자 목록 리턴 API
+    @GetMapping("/api/admin/user/like/best")
+    public ResponseEntity<?> GetBestLikeCount() {
+        List<UserLogCount> userLogCounts = userService.getUserLikeBest();
+        return ResponseEntity.ok().body(MessageResponse.success(userLogCounts));
+
+    }
 }
